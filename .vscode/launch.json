@@ -12,7 +12,7 @@
             "cwd": "${workspaceFolder}",
             "args": [
                 "-d",
-                "html.html.HTML",
+                "html_.html_.HTML",
                 "${file}"
             ],
             "justMyCode": false,
@@ -25,7 +25,7 @@
             "env": {
                 "SERVICE_MANIFEST_PATH": "service_manifest.yml",
                 "PRIVILEGED": "true",
-                "SERVICE_PATH": "html.html.HTML",
+                "SERVICE_PATH": "html_.html_.HTML",
                 "TASKING_DIR": "/tmp/HTML"
             },
             "console": "internalConsole",

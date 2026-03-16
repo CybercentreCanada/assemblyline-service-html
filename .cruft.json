@@ -7,7 +7,7 @@
       "service_name": "html",
       "__svc_name": "html",
       "__repository": "assemblyline-service-html",
-      "__pkg_name": "html",
+      "__pkg_name": "html_",
       "class_name": "HTML",
       "short_description": "This Assemblyline service analyzes HTML documents.",
       "short_description_fr": "Ce service d'Assemblyline analyse les fichiers HTML.",
