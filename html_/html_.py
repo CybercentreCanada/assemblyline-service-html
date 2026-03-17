@@ -1,14 +1,20 @@
 """Static HTML analysis."""
 
-from collections import defaultdict
+import binascii
+import hashlib
 import ipaddress
+import os
 import re
 import urllib
+from collections import defaultdict
 
 import bs4
 from assemblyline_v4_service.common.base import ServiceBase
 from assemblyline_v4_service.common.request import ServiceRequest
 from assemblyline_v4_service.common.result import ResultSection
+
+
+MIMETYPE_TO_EXT = {"image/png": ".png"}
 
 
 def tag_uris(uris: list[str]) -> dict[str, list[str]]:
@@ -35,8 +41,27 @@ def tag_uris(uris: list[str]) -> dict[str, list[str]]:
                 tags["network.static.uri_path"].add(split.path)
     return {label: list(values) for label, values in tags.items()}
 
+
 class HTML(ServiceBase):
     """Assemblyline service for static HTML analysis."""
+
+    def extract_data_uris(self, uris: list[str], request: ServiceRequest):
+        for uri in uris:
+            split = urllib.parse.urlsplit(uri)
+            if split.scheme != "data" or not split.path:
+                continue
+            media_types, data = split.path.split(",", 1)
+            media_types = media_types.split(";")
+            if media_types[-1] == "base64":
+                try:
+                    data = binascii.a2b_base64(data)
+                except binascii.Error:
+                    self.log.warning(f"base64 data url failed to decode in {request.sha256}")
+            file_name = hashlib.sha256(data).hexdigest() + MIMETYPE_TO_EXT.get(media_types[0], "")
+            file_path = os.path.join(self.working_directory, file_name)
+            with open(file_path, "wb") as f:
+                f.write(data)
+            request.add_extracted(file_path, file_name, f"{media_types[0]} data url")
 
     def execute(self, request: ServiceRequest):
         """Run the service."""
@@ -59,3 +84,5 @@ class HTML(ServiceBase):
                 css_urls.append(url)
         if css_urls:
             request.result.add_section(ResultSection("URLs in CSS", css_urls, tags=tag_uris(css_urls)))
+
+        self.extract_data_uris(srcs + css_urls + hrefs, request)

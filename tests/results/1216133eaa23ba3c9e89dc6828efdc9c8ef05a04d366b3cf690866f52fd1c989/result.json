@@ -118,7 +118,12 @@
     ]
   },
   "files": {
-    "extracted": [],
+    "extracted": [
+      {
+        "name": "6d627d586b06f93a056e4d4646f71831dd47fdbac9fca2522ee5a8af7ab1ff83.png",
+        "sha256": "6d627d586b06f93a056e4d4646f71831dd47fdbac9fca2522ee5a8af7ab1ff83"
+      }
+    ],
     "supplementary": []
   },
   "results": {
