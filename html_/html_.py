@@ -21,7 +21,11 @@ def tag_uris(uris: list[str]) -> dict[str, list[str]]:
     tags = defaultdict(set)
     for uri in uris:
         split = urllib.parse.urlsplit(uri)
-        if split.scheme and split.netloc:
+        if split.scheme == "mailto":
+            email = split.path
+            tags["network.email.address"].add(email)
+            tags["network.static.domain"].add(email.rsplit("@", 1)[-1])
+        elif split.scheme and split.netloc:
             tags["network.static.uri"].add(uri)
             tags["network.protocol"].add(split.scheme)
             hostname = split.hostname
