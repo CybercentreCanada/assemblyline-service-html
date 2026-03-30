@@ -28,6 +28,23 @@ import html_.html_
                 "network.static.domain": ["example.com"],
             },
         ),
+        (
+            ["file://example.com/path-to/file"],
+            {
+                "network.protocol": ["file"],
+                "network.static.domain": ["example.com"],
+                "network.static.uri": ["file://example.com/path-to/file"],
+                "network.static.uri_path": ["/path-to/file"],
+            },
+        ),
+        (
+            ["http://@example.com/"],
+            {
+                "network.protocol": ["http"],
+                "network.static.domain": ["example.com"],
+                "network.static.uri": ["http://@example.com/"],
+            },
+        ),
     ],
 )
 def test_tag_uris(uris: list[str], tags: dict[str, list[str]]) -> None:

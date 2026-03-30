@@ -41,7 +41,7 @@ def tag_uris(uris: list[str]) -> dict[str, list[str]]:
                     tags["network.port"].add(port)
             except ValueError:
                 pass
-            if split.path and split.path.startswith("/"):
+            if split.path and split.path.startswith("/") and split.path != "/":
                 tags["network.static.uri_path"].add(split.path)
     return {label: list(values) for label, values in tags.items()}
 
