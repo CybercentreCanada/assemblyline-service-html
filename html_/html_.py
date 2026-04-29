@@ -43,7 +43,7 @@ def tag_uris(uris: list[str]) -> dict[str, list[str]]:
                 pass
             if split.path and split.path.startswith("/") and split.path != "/":
                 tags["network.static.uri_path"].add(split.path)
-    return {label: list(values) for label, values in tags.items()}
+    return {label: sorted(values) for label, values in tags.items()}
 
 
 class HTML(ServiceBase):
