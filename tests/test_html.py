@@ -65,4 +65,4 @@ import html_.html_
     ],
 )
 def test_tag_uris(uris: list[str], tags: dict[str, list[str]]) -> None:
-    assert html_.html_.tag_uris(uris) == tags
+    assert html_.html_.tag_urls(uris) == tags

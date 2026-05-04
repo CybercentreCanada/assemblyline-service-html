@@ -17,12 +17,14 @@ import pywhatwgurl
 MIMETYPE_TO_EXT = {"image/png": ".png"}
 
 
-def tag_uris(uris: list[str]) -> dict[str, list[str]]:
+def tag_urls(urls: list[str], logger=None) -> dict[str, list[str]]:
     tags = defaultdict(set)
-    for uri in uris:
+    for url in urls:
         try:
-            url = pywhatwgurl.URL(uri)
-        except ValueError:
+            url = pywhatwgurl.URL(url)
+        except ValueError as e:
+            if logger:
+                logger.warning(e)
             continue
         if url.protocol == "mailto:":
             email = url.pathname
@@ -70,13 +72,13 @@ class HTML(ServiceBase):
 
         form_actions = [form.get("action", "") for form in soup.find_all("form", action=True)]
         if form_actions:
-            request.result.add_section(ResultSection("Form action URLs", form_actions, tags=tag_uris(form_actions)))
+            request.result.add_section(ResultSection("Form action URLs", form_actions, tags=tag_urls(form_actions, self.log)))
         hrefs = [tag.get("href", "") for tag in soup.find_all(href=True)]
         if hrefs:
-            request.result.add_section(ResultSection("href attributes", hrefs, tags=tag_uris(hrefs)))
+            request.result.add_section(ResultSection("href attributes", hrefs, tags=tag_urls(hrefs, self.log)))
         srcs = [tag.get("src", "") for tag in soup.find_all(src=True)]
         if srcs:
-            request.result.add_section(ResultSection("src attributes", srcs, tags=tag_uris(srcs)))
+            request.result.add_section(ResultSection("src attributes", srcs, tags=tag_urls(srcs, self.log)))
         css_urls = []
         styles = soup.find_all("style")
         for style in styles:
@@ -84,6 +86,6 @@ class HTML(ServiceBase):
             for url in urls:
                 css_urls.append(url)
         if css_urls:
-            request.result.add_section(ResultSection("URLs in CSS", css_urls, tags=tag_uris(css_urls)))
+            request.result.add_section(ResultSection("URLs in CSS", css_urls, tags=tag_urls(css_urls, self.log)))
 
         self.extract_data_uris(srcs + css_urls + hrefs, request)
