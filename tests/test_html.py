@@ -14,7 +14,7 @@ import html_.html_
             {
                 "network.protocol": ["https"],
                 "network.static.uri": [
-                    "https://example.com",
+                    "https://example.com/",
                     "https://example.com/path",
                 ],
                 "network.static.domain": ["example.com"],
@@ -42,7 +42,7 @@ import html_.html_
             {
                 "network.protocol": ["http"],
                 "network.static.domain": ["example.com"],
-                "network.static.uri": ["http://@example.com/"],
+                "network.static.uri": ["http://example.com/"],
             },
         ),
         (
@@ -50,7 +50,16 @@ import html_.html_
             {
                 "network.protocol": ["https"],
                 "network.static.domain": ["example.com"],
-                "network.static.uri": ["https://example.com"],
+                "network.static.uri": ["https://example.com/"],
+            },
+        ),
+        # https://url.spec.whatwg.org/#url-parsing
+        (
+            ["https://exa\n\tmple.com"],
+            {
+                "network.protocol": ["https"],
+                "network.static.domain": ["example.com"],
+                "network.static.uri": ["https://example.com/"],
             },
         ),
     ],

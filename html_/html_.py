@@ -12,7 +12,7 @@ import bs4
 from assemblyline_v4_service.common.base import ServiceBase
 from assemblyline_v4_service.common.request import ServiceRequest
 from assemblyline_v4_service.common.result import ResultSection
-
+import pywhatwgurl
 
 MIMETYPE_TO_EXT = {"image/png": ".png"}
 
@@ -20,30 +20,26 @@ MIMETYPE_TO_EXT = {"image/png": ".png"}
 def tag_uris(uris: list[str]) -> dict[str, list[str]]:
     tags = defaultdict(set)
     for uri in uris:
-        uri = uri.strip()
-        split = urllib.parse.urlsplit(uri)
-        if split.scheme == "mailto":
-            email = split.path
+        try:
+            url = pywhatwgurl.URL(uri)
+        except ValueError:
+            continue
+        if url.protocol == "mailto:":
+            email = url.pathname
             tags["network.email.address"].add(email)
             tags["network.static.domain"].add(email.rsplit("@", 1)[-1])
-        elif split.scheme and split.netloc:
-            tags["network.static.uri"].add(uri)
-            tags["network.protocol"].add(split.scheme)
-            hostname = split.hostname
-            if hostname:
-                try:
-                    ip_address = ipaddress.ip_address(hostname)
-                    tags["network.static.ip"].add(ip_address.compressed)
-                except ValueError:
-                    tags["network.static.domain"].add(hostname)
+        elif url.hostname:
+            tags["network.static.uri"].add(str(url))
+            tags["network.protocol"].add(url.protocol.strip(':'))
             try:
-                port = split.port
-                if port is not None:
-                    tags["network.port"].add(port)
+                ip_address = ipaddress.ip_address(url.hostname)
+                tags["network.static.ip"].add(ip_address.compressed)
             except ValueError:
-                pass
-            if split.path and split.path.startswith("/") and split.path != "/":
-                tags["network.static.uri_path"].add(split.path)
+                tags["network.static.domain"].add(url.hostname)
+            if url.port:
+                tags["network.port"].add(url.port)
+            if url.pathname and url.pathname != "/":
+                tags["network.static.uri_path"].add(url.pathname)
     return {label: sorted(values) for label, values in tags.items()}
 
 
