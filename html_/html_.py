@@ -23,7 +23,7 @@ def tag_urls(urls: list[str], logger=None) -> dict[str, list[str]]:
         try:
             url = pywhatwgurl.URL(url)
         except ValueError as e:
-            if logger:
+            if logger and not url.strip().startswith('#'):
                 logger.warning(e)
             continue
         if url.protocol == "mailto:":
@@ -48,12 +48,18 @@ def tag_urls(urls: list[str], logger=None) -> dict[str, list[str]]:
 class HTML(ServiceBase):
     """Assemblyline service for static HTML analysis."""
 
-    def extract_data_uris(self, uris: list[str], request: ServiceRequest):
-        for uri in uris:
-            split = urllib.parse.urlsplit(uri)
-            if split.scheme != "data" or not split.path:
+    def extract_data_urls(self, urls: list[str], request: ServiceRequest):
+        for url in urls:
+            try: 
+                url = pywhatwgurl.URL(url)
+            except ValueError as e:
+                # ignore fragments
+                if not url.strip().startswith('#'):
+                    self.log.warning(e)
                 continue
-            media_types, data = split.path.split(",", 1)
+            if url.protocol != "data:" or not url.pathname:
+                continue
+            media_types, data = url.pathname.split(",", 1)
             media_types = media_types.split(";")
             if media_types[-1] == "base64":
                 try:
@@ -88,4 +94,4 @@ class HTML(ServiceBase):
         if css_urls:
             request.result.add_section(ResultSection("URLs in CSS", css_urls, tags=tag_urls(css_urls, self.log)))
 
-        self.extract_data_uris(srcs + css_urls + hrefs, request)
+        self.extract_data_urls(srcs + css_urls + hrefs, request)
