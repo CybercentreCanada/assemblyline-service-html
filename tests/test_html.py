@@ -45,6 +45,14 @@ import html_.html_
                 "network.static.uri": ["http://@example.com/"],
             },
         ),
+        (
+            ["   https://example.com   "],
+            {
+                "network.protocol": ["https"],
+                "network.static.domain": ["example.com"],
+                "network.static.uri": ["https://example.com"],
+            },
+        ),
     ],
 )
 def test_tag_uris(uris: list[str], tags: dict[str, list[str]]) -> None:

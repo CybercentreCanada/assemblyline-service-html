@@ -20,6 +20,7 @@ MIMETYPE_TO_EXT = {"image/png": ".png"}
 def tag_uris(uris: list[str]) -> dict[str, list[str]]:
     tags = defaultdict(set)
     for uri in uris:
+        uri = uri.strip()
         split = urllib.parse.urlsplit(uri)
         if split.scheme == "mailto":
             email = split.path
