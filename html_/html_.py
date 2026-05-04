@@ -5,14 +5,13 @@ import hashlib
 import ipaddress
 import os
 import re
-import urllib
 from collections import defaultdict
 
 import bs4
+import pywhatwgurl
 from assemblyline_v4_service.common.base import ServiceBase
 from assemblyline_v4_service.common.request import ServiceRequest
 from assemblyline_v4_service.common.result import ResultSection
-import pywhatwgurl
 
 MIMETYPE_TO_EXT = {"image/png": ".png"}
 
@@ -23,7 +22,7 @@ def tag_urls(urls: list[str], logger=None) -> dict[str, list[str]]:
         try:
             url = pywhatwgurl.URL(url)
         except ValueError as e:
-            if logger and not url.strip().startswith('#'):
+            if logger and not url.strip().startswith("#"):
                 logger.warning(e)
             continue
         if url.protocol == "mailto:":
@@ -32,7 +31,7 @@ def tag_urls(urls: list[str], logger=None) -> dict[str, list[str]]:
             tags["network.static.domain"].add(email.rsplit("@", 1)[-1])
         elif url.hostname:
             tags["network.static.uri"].add(str(url))
-            tags["network.protocol"].add(url.protocol.strip(':'))
+            tags["network.protocol"].add(url.protocol.strip(":"))
             try:
                 ip_address = ipaddress.ip_address(url.hostname)
                 tags["network.static.ip"].add(ip_address.compressed)
@@ -50,11 +49,11 @@ class HTML(ServiceBase):
 
     def extract_data_urls(self, urls: list[str], request: ServiceRequest):
         for url in urls:
-            try: 
+            try:
                 url = pywhatwgurl.URL(url)
             except ValueError as e:
                 # ignore fragments
-                if not url.strip().startswith('#'):
+                if not url.strip().startswith("#"):
                     self.log.warning(e)
                 continue
             if url.protocol != "data:" or not url.pathname:
@@ -78,7 +77,13 @@ class HTML(ServiceBase):
 
         form_actions = [form.get("action", "") for form in soup.find_all("form", action=True)]
         if form_actions:
-            request.result.add_section(ResultSection("Form action URLs", form_actions, tags=tag_urls(form_actions, self.log)))
+            request.result.add_section(
+                ResultSection(
+                    "Form action URLs",
+                    form_actions,
+                    tags=tag_urls(form_actions, self.log),
+                )
+            )
         hrefs = [tag.get("href", "") for tag in soup.find_all(href=True)]
         if hrefs:
             request.result.add_section(ResultSection("href attributes", hrefs, tags=tag_urls(hrefs, self.log)))
