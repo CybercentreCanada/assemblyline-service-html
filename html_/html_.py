@@ -12,6 +12,7 @@ import pywhatwgurl
 from assemblyline_v4_service.common.base import ServiceBase
 from assemblyline_v4_service.common.request import ServiceRequest
 from assemblyline_v4_service.common.result import ResultTextSection
+from urllib.parse import unquote_to_bytes
 
 MIMETYPE_TO_EXT = {"image/png": ".png"}
 
@@ -44,6 +45,22 @@ def tag_urls(urls: list[str], logger=None) -> dict[str, list[str]]:
     return {label: sorted(values) for label, values in tags.items()}
 
 
+def decode_data_url(url: pywhatwgurl.URL) -> (str, bytes):
+    if url.protocol != "data:":
+        raise ValueError("URL is not a data url")
+    if "," not in url.pathname:
+        raise ValueError("Invalid data URL: Missing comma")
+    media_types, data = url.pathname.split(",", 1)
+    media_types = media_types.split(";")
+    data = unquote_to_bytes(data)
+    if media_types[-1] == "base64":
+        try:
+            data = binascii.a2b_base64(data)
+        except binascii.Error as e:
+            raise RuntimeError("base64 data url failed to decode") from e
+    return media_types[0], data
+
+
 class HTML(ServiceBase):
     """Assemblyline service for static HTML analysis."""
 
@@ -51,25 +68,22 @@ class HTML(ServiceBase):
         for url in urls:
             try:
                 url = pywhatwgurl.URL(url)
-            except ValueError as e:
-                # ignore fragments
-                if not url.strip().startswith("#"):
-                    self.log.warning(e)
+            except ValueError:
                 continue
-            if url.protocol != "data:" or not url.pathname:
+            if url.protocol != "data:":
                 continue
-            media_types, data = url.pathname.split(",", 1)
-            media_types = media_types.split(";")
-            if media_types[-1] == "base64":
-                try:
-                    data = binascii.a2b_base64(data)
-                except binascii.Error:
-                    self.log.warning(f"base64 data url failed to decode in {request.sha256}")
-            file_name = hashlib.sha256(data).hexdigest() + MIMETYPE_TO_EXT.get(media_types[0], "")
+            try:
+                media_type, data = decode_data_url(url)
+            except (ValueError, RuntimeError) as e:
+                self.log.error(e)
+                continue
+            if not data:
+                continue
+            file_name = hashlib.sha256(data).hexdigest() + MIMETYPE_TO_EXT.get(media_type, "")
             file_path = os.path.join(self.working_directory, file_name)
             with open(file_path, "wb") as f:
                 f.write(data)
-            request.add_extracted(file_path, file_name, f"{media_types[0]} data url")
+            request.add_extracted(file_path, file_name, f"{media_type} data url")
 
     def execute(self, request: ServiceRequest):
         """Run the service."""
@@ -80,19 +94,19 @@ class HTML(ServiceBase):
             request.result.add_section(
                 ResultTextSection(
                     "Form action URLs",
-                    "\n".join(form_actions),
+                    body="\n".join(form_actions),
                     tags=tag_urls(form_actions, self.log),
                 )
             )
         hrefs = [tag.get("href", "") for tag in soup.find_all(href=True)]
         if hrefs:
             request.result.add_section(
-                ResultTextSection("href attributes", "\n".join(hrefs), tags=tag_urls(hrefs, self.log))
+                ResultTextSection("href attributes", body="\n".join(hrefs), tags=tag_urls(hrefs, self.log))
             )
         srcs = [tag.get("src", "") for tag in soup.find_all(src=True)]
         if srcs:
             request.result.add_section(
-                ResultTextSection("src attributes", "\n".join(srcs), tags=tag_urls(srcs, self.log))
+                ResultTextSection("src attributes", body="\n".join(srcs), tags=tag_urls(srcs, self.log))
             )
         css_urls = []
         styles = soup.find_all("style")
@@ -104,7 +118,7 @@ class HTML(ServiceBase):
             request.result.add_section(
                 ResultTextSection(
                     "URLs in CSS",
-                    "\n".join(css_urls),
+                    body="\n".join(css_urls),
                     tags=tag_urls(css_urls, self.log),
                 )
             )
