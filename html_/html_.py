@@ -11,7 +11,7 @@ import bs4
 import pywhatwgurl
 from assemblyline_v4_service.common.base import ServiceBase
 from assemblyline_v4_service.common.request import ServiceRequest
-from assemblyline_v4_service.common.result import ResultSection
+from assemblyline_v4_service.common.result import ResultTextSection
 
 MIMETYPE_TO_EXT = {"image/png": ".png"}
 
@@ -78,18 +78,22 @@ class HTML(ServiceBase):
         form_actions = [form.get("action", "") for form in soup.find_all("form", action=True)]
         if form_actions:
             request.result.add_section(
-                ResultSection(
+                ResultTextSection(
                     "Form action URLs",
-                    form_actions,
+                    "\n".join(form_actions),
                     tags=tag_urls(form_actions, self.log),
                 )
             )
         hrefs = [tag.get("href", "") for tag in soup.find_all(href=True)]
         if hrefs:
-            request.result.add_section(ResultSection("href attributes", hrefs, tags=tag_urls(hrefs, self.log)))
+            request.result.add_section(
+                ResultTextSection("href attributes", "\n".join(hrefs), tags=tag_urls(hrefs, self.log))
+            )
         srcs = [tag.get("src", "") for tag in soup.find_all(src=True)]
         if srcs:
-            request.result.add_section(ResultSection("src attributes", srcs, tags=tag_urls(srcs, self.log)))
+            request.result.add_section(
+                ResultTextSection("src attributes", "\n".join(srcs), tags=tag_urls(srcs, self.log))
+            )
         css_urls = []
         styles = soup.find_all("style")
         for style in styles:
@@ -97,6 +101,12 @@ class HTML(ServiceBase):
             for url in urls:
                 css_urls.append(url)
         if css_urls:
-            request.result.add_section(ResultSection("URLs in CSS", css_urls, tags=tag_urls(css_urls, self.log)))
+            request.result.add_section(
+                ResultTextSection(
+                    "URLs in CSS",
+                    "\n".join(css_urls),
+                    tags=tag_urls(css_urls, self.log),
+                )
+            )
 
         self.extract_data_urls(srcs + css_urls + hrefs, request)
