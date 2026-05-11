@@ -1,0 +1,203 @@
+{
+  "extra": {
+    "drop_file": false,
+    "score": 0,
+    "sections": [
+      {
+        "auto_collapse": false,
+        "body": [
+          "https://badwebsiteurl.com/postrcv/bad.php"
+        ],
+        "body_config": {},
+        "body_format": "TEXT",
+        "classification": "TLP:C",
+        "depth": 0,
+        "heuristic": null,
+        "promote_to": null,
+        "tags": {
+          "network": {
+            "protocol": [
+              "https"
+            ],
+            "static": {
+              "domain": [
+                "badwebsiteurl.com"
+              ],
+              "uri": [
+                "https://badwebsiteurl.com/postrcv/bad.php"
+              ],
+              "uri_path": [
+                "/postrcv/bad.php"
+              ]
+            }
+          }
+        },
+        "title_text": "Form action URLs",
+        "zeroize_on_tag_safe": false
+      },
+      {
+        "auto_collapse": false,
+        "body": [
+          "https://upload.wikimedia.org/wikipedia/commons/thumb/3/34/Microsoft_Office_Excel_%282019%E2%80%93present%29.svg/2203px-Microsoft_Office_Excel_%282019%E2%80%93present%29.svg.png",
+          "#"
+        ],
+        "body_config": {},
+        "body_format": "TEXT",
+        "classification": "TLP:C",
+        "depth": 0,
+        "heuristic": null,
+        "promote_to": null,
+        "tags": {
+          "network": {
+            "protocol": [
+              "https"
+            ],
+            "static": {
+              "domain": [
+                "upload.wikimedia.org"
+              ],
+              "uri": [
+                "https://upload.wikimedia.org/wikipedia/commons/thumb/3/34/Microsoft_Office_Excel_%282019%E2%80%93present%29.svg/2203px-Microsoft_Office_Excel_%282019%E2%80%93present%29.svg.png"
+              ],
+              "uri_path": [
+                "/wikipedia/commons/thumb/3/34/Microsoft_Office_Excel_%282019%E2%80%93present%29.svg/2203px-Microsoft_Office_Excel_%282019%E2%80%93present%29.svg.png"
+              ]
+            }
+          }
+        },
+        "title_text": "href attributes",
+        "zeroize_on_tag_safe": false
+      },
+      {
+        "auto_collapse": false,
+        "body": [
+          "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIMAAACDCAMAAACZQ1hUAAAAbFBMVEUgckX///8IbDqEp5ENbDyOsJwAaDP2+/gZcEE/glwSbz87e1Ouxrfd5uAAaTaBo4wAZC3S39fj7OYAYCTu8/C+0cUueE6ivq1klHfL2tFTimhrmn7F1stHhGB/p484f1eZt6Rbjm94n4UAXBuHrcbEAAAEuklEQVR4nO2baZujIAyAFRUpVUatUnvYa/7/f1xblLs7OpXaZ9f0W7TwypGEAJ4/v3hzA/gLQy8LA5OFgcnCwORlhjyJ6kMyE0Nc7JLbGRICMIaHtzOUxTGqGwpgiDwmm/ydDEXb9qssI7z6h5DLexjatj+d4QYCrFT/kDByzVCmu8th7YXax7+LIS6qoF4h+Lx6pwxxngR7Ym979wxxetweKPzp410xlEUVXVceGV79tAxt218pyQgaVf10DNWBbjI47uMnZjj9vvqpGHbZKwDTMARkAoZ4pOgMYAIGmsFxUpeTM6zGjijSxLMzeFkyPwMIFoaFYWFYGP4nhjMIe1GiYIRtWjcM0ReXdh3KHxF667WNFqZMzyBLvO0jEhDFFu07GHz/FrIH6or8pFT0AgOGUH/fZNixV7Kdok2VIfF7BlInVaDF/yZDwYrcFKqWTsIAH8v8/CeGihUJK7V18BQMoGalXZS/mAx7Bon2ivYajmIgMMxCQ4vX3TAvlCGuM+TX/jHZixRNWo+bFyQoyvRg6vsSTYb9WggS9BjbtEMYAPuwE1TVGc/AJQbDCiMuyp/s2p8ZaNfktfIEBj1C6SkluvAXYig1UvuFzZPB5YaB11aIohHlkz3SFodO/CZK+RDn7g4ee12lr0/dMFDuavLO22VbPhg2+uv6elPuKWzVDmBobRGHqB6TA3DvUzZYf/vOUCVCDmIShDXX3rSp8aONgic+AC9EaZiTmSkw7OSR+27ZWOdjfTcU5QaZB7i520LzXdNWR6xIoD5QA4gB/kIMAP/wzT8ntyBYGNLOb6aqdmQ7tPaaTwSf11FS2/C3MLAB+LLvRijVi/YtLsTKkHS+W91eqcbHUcgrtaIjW09YGApuy+XPiL1fxFH4HCtFG8ZJYkglSXiPIbrl2oqOnJtMiBKTluCJLWTrC9wLgOI9BIFFO4ZBcpWtmMZJYnC4zsrENtHWsNFvYkAiOo/tk8I5g2SoWqFPOsMpg+Q1HoPyCYRLBtz4qqSetaa/zgvy0rxAnmEoj9YU/zD7kPzGPohVkmBJbBDP7SR90U6KaVl+33hBNnPtzF+ENeffY2k3eUgMM5HfRJg7rPunZ7xf4qvxuqv4IeSRU/JofWlv35ihjuIo0ZM5e4r4WtMvztoscxNPEm6c4n5G4TXv3NzCMHlcjSiHv3H4cCW+U52hTtYXIoq7SLWBq97fEoO79eZReUR4NJGaa39X6+5SS67C3kyYOZDJfVa/qjIip95MVO4Z+jyMaRJZxrFszBxI22TdT8/DMN3YPIxHoqJMb1Ybvi3L3V594iQf9Swvd5c2INAjAc1GxfnekpeLx+blxomj/OSLDC7ztEMZnOarBzK4zdsPY3C8fzGA4ck+TuJ6XkRfQbdxFXyp+1lBp10538/6hH29T9jfXBgWhoVhYfi3GD7gvJyDc4Ovnp/8gHOkn3Ce9hPOFXfnq0ceLp+a4S7dOXMw1znzTuK5z9sLkse9AzLXvQOZ5H7/4n73ZUDfuL6HEs14D0VIWRwv9doDM93HkaQ4btm9JEvfvIuhI0mCGe9nCXn0TUOlvnnvPTUu0n29cIb7erLMem9xOlkYmCwMTBYGJgsDk09g+ANDLWeJjjVTQAAAAABJRU5ErkJggg=="
+        ],
+        "body_config": {},
+        "body_format": "TEXT",
+        "classification": "TLP:C",
+        "depth": 0,
+        "heuristic": null,
+        "promote_to": null,
+        "tags": {},
+        "title_text": "src attributes",
+        "zeroize_on_tag_safe": false
+      },
+      {
+        "auto_collapse": false,
+        "body": [
+          "https://imgur.com/vAVJT9c.png"
+        ],
+        "body_config": {},
+        "body_format": "TEXT",
+        "classification": "TLP:C",
+        "depth": 0,
+        "heuristic": null,
+        "promote_to": null,
+        "tags": {
+          "network": {
+            "protocol": [
+              "https"
+            ],
+            "static": {
+              "domain": [
+                "imgur.com"
+              ],
+              "uri": [
+                "https://imgur.com/vAVJT9c.png"
+              ],
+              "uri_path": [
+                "/vAVJT9c.png"
+              ]
+            }
+          }
+        },
+        "title_text": "URLs in CSS",
+        "zeroize_on_tag_safe": false
+      }
+    ]
+  },
+  "files": {
+    "extracted": [
+      {
+        "name": "6d627d586b06f93a056e4d4646f71831dd47fdbac9fca2522ee5a8af7ab1ff83.png",
+        "sha256": "6d627d586b06f93a056e4d4646f71831dd47fdbac9fca2522ee5a8af7ab1ff83"
+      }
+    ],
+    "supplementary": []
+  },
+  "results": {
+    "heuristics": [],
+    "tags": {
+      "network.protocol": [
+        {
+          "heur_id": null,
+          "signatures": [],
+          "value": "https"
+        },
+        {
+          "heur_id": null,
+          "signatures": [],
+          "value": "https"
+        },
+        {
+          "heur_id": null,
+          "signatures": [],
+          "value": "https"
+        }
+      ],
+      "network.static.domain": [
+        {
+          "heur_id": null,
+          "signatures": [],
+          "value": "badwebsiteurl.com"
+        },
+        {
+          "heur_id": null,
+          "signatures": [],
+          "value": "imgur.com"
+        },
+        {
+          "heur_id": null,
+          "signatures": [],
+          "value": "upload.wikimedia.org"
+        }
+      ],
+      "network.static.uri": [
+        {
+          "heur_id": null,
+          "signatures": [],
+          "value": "https://badwebsiteurl.com/postrcv/bad.php"
+        },
+        {
+          "heur_id": null,
+          "signatures": [],
+          "value": "https://imgur.com/vAVJT9c.png"
+        },
+        {
+          "heur_id": null,
+          "signatures": [],
+          "value": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/34/Microsoft_Office_Excel_%282019%E2%80%93present%29.svg/2203px-Microsoft_Office_Excel_%282019%E2%80%93present%29.svg.png"
+        }
+      ],
+      "network.static.uri_path": [
+        {
+          "heur_id": null,
+          "signatures": [],
+          "value": "/postrcv/bad.php"
+        },
+        {
+          "heur_id": null,
+          "signatures": [],
+          "value": "/vAVJT9c.png"
+        },
+        {
+          "heur_id": null,
+          "signatures": [],
+          "value": "/wikipedia/commons/thumb/3/34/Microsoft_Office_Excel_%282019%E2%80%93present%29.svg/2203px-Microsoft_Office_Excel_%282019%E2%80%93present%29.svg.png"
+        }
+      ]
+    },
+    "temp_submission_data": {}
+  }
+}
