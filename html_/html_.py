@@ -11,7 +11,7 @@ import bs4
 import pywhatwgurl
 from assemblyline_v4_service.common.base import ServiceBase
 from assemblyline_v4_service.common.request import ServiceRequest
-from assemblyline_v4_service.common.result import ResultTextSection
+from assemblyline_v4_service.common.result import ResultTextSection, ResultSection
 from urllib.parse import unquote_to_bytes
 
 MIMETYPE_TO_EXT = {"image/png": ".png"}
@@ -61,6 +61,22 @@ def decode_data_url(url: pywhatwgurl.URL) -> (str, bytes):
     return media_types[0], data
 
 
+def check_html_entities(data: bytes) -> ResultSection | None:
+    alphanumeric_html_entities = False
+    for hex, number in re.findall(b'(?i)&#(x)?([0-9a-f]{1,7});', data):
+        try:
+            number = int(number, 16 if hex else 10)
+        except ValueError:
+            continue
+        if number < 48 or number > 122 or (number > 57 and number < 65) or (number > 90 and number < 97):
+            continue
+        alphanumeric_html_entities = True
+        break
+    if alphanumeric_html_entities:
+        return ResultSection("Unnecessary HTML entities")
+    return None
+
+
 class HTML(ServiceBase):
     """Assemblyline service for static HTML analysis."""
 
@@ -87,7 +103,13 @@ class HTML(ServiceBase):
 
     def execute(self, request: ServiceRequest):
         """Run the service."""
-        soup = bs4.BeautifulSoup(request.file_contents, features="lxml")
+        file_contents = request.file_contents
+
+        # Check for unnecessary HTML entities in the raw file
+        if html_entity_res := check_html_entities(file_contents):
+            request.result.add_section(html_entity_res)
+
+        soup = bs4.BeautifulSoup(file_contents, features="lxml")
 
         form_actions = [form.get("action", "") for form in soup.find_all("form", action=True)]
         if form_actions:
