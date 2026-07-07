@@ -62,6 +62,14 @@ import html_.html_
                 "network.static.uri": ["https://example.com/"],
             },
         ),
+        (
+            ["whatsapp://send?text=test"],
+            {
+                "network.protocol": ["whatsapp"],
+                "network.static.uri": ["whatsapp://send?text=test"],
+                "file.string.extracted": ["send"],
+            },
+        ),
     ],
 )
 def test_tag_uris(uris: list[str], tags: dict[str, list[str]]) -> None:

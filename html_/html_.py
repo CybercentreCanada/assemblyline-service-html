@@ -37,7 +37,13 @@ def tag_urls(urls: list[str], logger=None) -> dict[str, list[str]]:
                 ip_address = ipaddress.ip_address(url.hostname)
                 tags["network.static.ip"].add(ip_address.compressed)
             except ValueError:
-                tags["network.static.domain"].add(url.hostname)
+                if '.' in url.hostname:
+                    # Make sure there's a TLD
+                    # TODO: Validate the TLD against a the icann list
+                    tags["network.static.domain"].add(url.hostname)
+                else:
+                    # Not a domain, but probably an interesting keyword
+                    tags["file.string.extracted"].add(url.hostname)
             if url.port:
                 tags["network.port"].add(url.port)
             if url.pathname and url.pathname != "/":
