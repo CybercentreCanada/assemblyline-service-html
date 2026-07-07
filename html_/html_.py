@@ -45,7 +45,7 @@ def tag_urls(urls: list[str], logger=None) -> dict[str, list[str]]:
     return {label: sorted(values) for label, values in tags.items()}
 
 
-def decode_data_url(url: pywhatwgurl.URL) -> (str, bytes):
+def decode_data_url(url: pywhatwgurl.URL) -> tuple[str, bytes]:
     if url.protocol != "data:":
         raise ValueError("URL is not a data url")
     if "," not in url.pathname:
@@ -80,7 +80,7 @@ def check_html_entities(data: bytes) -> ResultSection | None:
 class HTML(ServiceBase):
     """Assemblyline service for static HTML analysis."""
 
-    def extract_data_urls(self, urls: list[str], request: ServiceRequest):
+    def extract_data_urls(self, urls: list[str], request: ServiceRequest) -> None:
         for url in urls:
             try:
                 url = pywhatwgurl.URL(url)
@@ -101,7 +101,7 @@ class HTML(ServiceBase):
                 f.write(data)
             request.add_extracted(file_path, file_name, f"{media_type} data url")
 
-    def execute(self, request: ServiceRequest):
+    def execute(self, request: ServiceRequest) -> None:
         """Run the service."""
         file_contents = request.file_contents
 
@@ -133,7 +133,10 @@ class HTML(ServiceBase):
         css_urls = []
         styles = soup.find_all("style")
         for style in styles:
-            urls = re.findall(r'url\("([^"]*)"\)', style.string)
+            string = style.string
+            if not string:
+                continue
+            urls = re.findall(r'url\("([^"]*)"\)', string)
             for url in urls:
                 css_urls.append(url)
         if css_urls:
