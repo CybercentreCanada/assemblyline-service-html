@@ -12,7 +12,7 @@ import pywhatwgurl
 from assemblyline_v4_service.common.base import ServiceBase
 from assemblyline_v4_service.common.request import ServiceRequest
 from assemblyline_v4_service.common.result import ResultTextSection, ResultSection
-from urllib.parse import unquote_to_bytes
+from urllib.parse import unquote_to_bytes, unquote
 
 MIMETYPE_TO_EXT = {"image/png": ".png"}
 
@@ -27,7 +27,8 @@ def tag_urls(urls: list[str], logger=None) -> dict[str, list[str]]:
                 logger.warning(e)
             continue
         if url.protocol == "mailto:":
-            email = url.pathname
+            # This can produce unicode placeholder characters, but so does outlook with invalid utf-8
+            email = unquote(url.pathname).strip()
             tags["network.email.address"].add(email)
             tags["network.static.domain"].add(email.rsplit("@", 1)[-1])
         elif url.hostname:

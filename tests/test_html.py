@@ -63,6 +63,20 @@ import html_.html_
             },
         ),
         (
+            ["mailto:  username@example.com"],
+            {
+                "network.static.domain": ["example.com"],
+                "network.email.address": ["username@example.com"],
+            },
+        ),
+        (
+            ["mailto:%20%20username@example.com"],
+            {
+                "network.static.domain": ["example.com"],
+                "network.email.address": ["username@example.com"],
+            },
+        ),
+        (
             ["whatsapp://send?text=test"],
             {
                 "network.protocol": ["whatsapp"],
