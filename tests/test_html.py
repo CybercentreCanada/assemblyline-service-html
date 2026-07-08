@@ -84,6 +84,12 @@ import html_.html_
                 "file.string.extracted": ["send"],
             },
         ),
+        (
+            ["mailto:webmaster"],
+            {
+                "file.string.extracted": ["webmaster"],
+            },
+        ),
     ],
 )
 def test_tag_uris(uris: list[str], tags: dict[str, list[str]]) -> None:
