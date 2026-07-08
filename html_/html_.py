@@ -29,6 +29,8 @@ def tag_urls(urls: list[str], logger=None) -> dict[str, list[str]]:
         if url.protocol == "mailto:":
             # This can produce unicode placeholder characters, but so does outlook with invalid utf-8
             email = unquote(url.pathname).strip()
+            if not email:
+                continue
             if '@' in email:
                 tags["network.email.address"].add(email)
                 tags["network.static.domain"].add(email.rsplit("@", 1)[-1])
