@@ -39,7 +39,6 @@ def tag_urls(urls: list[str], logger=None) -> dict[str, list[str]]:
                 
         elif url.hostname:
             tags["network.static.uri"].add(str(url))
-            tags["network.protocol"].add(url.protocol.strip(":"))
             try:
                 ip_address = ipaddress.ip_address(url.hostname)
                 tags["network.static.ip"].add(ip_address.compressed)

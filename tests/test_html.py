@@ -12,7 +12,6 @@ import html_.html_
         (
             ["https://example.com", "https://example.com/path"],
             {
-                "network.protocol": ["https"],
                 "network.static.uri": [
                     "https://example.com/",
                     "https://example.com/path",
@@ -31,7 +30,6 @@ import html_.html_
         (
             ["file://example.com/path-to/file"],
             {
-                "network.protocol": ["file"],
                 "network.static.domain": ["example.com"],
                 "network.static.uri": ["file://example.com/path-to/file"],
                 "network.static.uri_path": ["/path-to/file"],
@@ -40,7 +38,6 @@ import html_.html_
         (
             ["http://@example.com/"],
             {
-                "network.protocol": ["http"],
                 "network.static.domain": ["example.com"],
                 "network.static.uri": ["http://example.com/"],
             },
@@ -48,7 +45,6 @@ import html_.html_
         (
             ["   https://example.com   "],
             {
-                "network.protocol": ["https"],
                 "network.static.domain": ["example.com"],
                 "network.static.uri": ["https://example.com/"],
             },
@@ -57,7 +53,6 @@ import html_.html_
         (
             ["https://exa\n\tmple.com"],
             {
-                "network.protocol": ["https"],
                 "network.static.domain": ["example.com"],
                 "network.static.uri": ["https://example.com/"],
             },
@@ -79,7 +74,6 @@ import html_.html_
         (
             ["whatsapp://send?text=test"],
             {
-                "network.protocol": ["whatsapp"],
                 "network.static.uri": ["whatsapp://send?text=test"],
                 "file.string.extracted": ["send"],
             },
