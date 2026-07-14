@@ -6,6 +6,7 @@ import ipaddress
 import os
 import re
 from collections import defaultdict
+from enum import Enum
 
 import bs4
 import pywhatwgurl
@@ -17,6 +18,12 @@ from urllib.parse import unquote_to_bytes, unquote
 MIMETYPE_TO_EXT = {"image/png": ".png"}
 
 
+class HostType(Enum):
+    OTHER = 0
+    IPV4 = 1
+    DOMAIN = 2
+    IPV6 = 3
+
 def tag_urls(urls: list[str], logger=None) -> dict[str, list[str]]:
     tags = defaultdict(set)
     for url in urls:
@@ -26,6 +33,7 @@ def tag_urls(urls: list[str], logger=None) -> dict[str, list[str]]:
             if logger and not url.strip().startswith("#"):
                 logger.warning(e)
             continue
+        hostname = url.hostname
         if url.protocol == "mailto:":
             # This can produce unicode placeholder characters, but so does outlook with invalid utf-8
             email = unquote(url.pathname).strip()
@@ -37,19 +45,32 @@ def tag_urls(urls: list[str], logger=None) -> dict[str, list[str]]:
             else:
                 tags["file.string.extracted"].add(email)
                 
-        elif url.hostname:
-            tags["network.static.uri"].add(str(url))
-            try:
-                ip_address = ipaddress.ip_address(url.hostname)
-                tags["network.static.ip"].add(ip_address.compressed)
-            except ValueError:
-                if '.' in url.hostname:
-                    # Make sure there's a TLD
-                    # TODO: Validate the TLD against a the icann list
-                    tags["network.static.domain"].add(url.hostname)
-                else:
-                    # Not a domain, but probably an interesting keyword
-                    tags["file.string.extracted"].add(url.hostname)
+        elif hostname:
+            if hostname.startswith('['):
+                try:
+                    ip_address = ipaddress.IPv6Address(hostname[1:-1])
+                    tags["network.static.ip"].add(ip_address.compressed)
+                    host_type = HostType.IPV6
+                except ValueError as e:
+                    if logger:
+                        logger.warning(e)
+                    host_type = HostType.OTHER
+            else:
+                try:
+                    ip_address = ipaddress.IPv4Address(hostname)
+                    tags["network.static.ip"].add(ip_address.compressed)
+                    host_type = HostType.IPV4
+                except ValueError:
+                    if '.' in url.hostname:
+                        # Make sure there's a TLD
+                        # TODO: Validate the TLD against a the icann list
+                        tags["network.static.domain"].add(url.hostname)
+                        host_type = HostType.DOMAIN
+                    else:
+                        host_type = HostType.OTHER
+                        # Not a domain, but probably an interesting keyword
+                        tags["file.string.extracted"].add(url.hostname)
+            tags["network.static.uri" if host_type != HostType.OTHER else "file.string.extracted"].add(str(url))
             if url.port:
                 tags["network.port"].add(url.port)
             if url.pathname and url.pathname != "/":

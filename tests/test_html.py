@@ -74,8 +74,7 @@ import html_.html_
         (
             ["whatsapp://send?text=test"],
             {
-                "network.static.uri": ["whatsapp://send?text=test"],
-                "file.string.extracted": ["send"],
+                "file.string.extracted": ["send", "whatsapp://send?text=test"],
             },
         ),
         (
