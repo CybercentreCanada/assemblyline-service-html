@@ -67,7 +67,6 @@ def tag_urls(urls: list[str], logger=None) -> dict[str, list[str]]:
                 except ValueError:
                     if _is_valid_domain(hostname):
                         # Make sure there's a TLD
-                        # TODO: Validate the TLD against a the icann list
                         tags["network.static.domain"].add(hostname)
                         host_type = HostType.DOMAIN
                     else:
