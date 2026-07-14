@@ -84,6 +84,31 @@ import html_.html_
             },
         ),
         (["mailto:"], {}),
+        (
+            ["chrome://resources/css/text_defaults_md.css"],
+            {
+                "file.string.extracted": ["chrome://resources/css/text_defaults_md.css", "resources"],
+                "network.static.uri_path": ["/css/text_defaults_md.css"],
+            },
+        ),
+        (
+            ["http://weebly-link/"],
+            {
+                "file.string.extracted": ["http://weebly-link/", "weebly-link"],
+            },
+        ),
+        (
+            ["https://example.comIF"],
+            {
+                "file.string.extracted": ["example.comif", "https://example.comif/"],
+            },
+        ),
+        (
+            ["https://example-.com"],
+            {
+                "file.string.extracted": ["example-.com", "https://example-.com/"],
+            },
+        ),
     ],
 )
 def test_tag_uris(uris: list[str], tags: dict[str, list[str]]) -> None:
