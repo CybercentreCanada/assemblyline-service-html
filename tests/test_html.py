@@ -12,7 +12,6 @@ import html_.html_
         (
             ["https://example.com", "https://example.com/path"],
             {
-                "network.protocol": ["https"],
                 "network.static.uri": [
                     "https://example.com/",
                     "https://example.com/path",
@@ -31,7 +30,6 @@ import html_.html_
         (
             ["file://example.com/path-to/file"],
             {
-                "network.protocol": ["file"],
                 "network.static.domain": ["example.com"],
                 "network.static.uri": ["file://example.com/path-to/file"],
                 "network.static.uri_path": ["/path-to/file"],
@@ -40,7 +38,6 @@ import html_.html_
         (
             ["http://@example.com/"],
             {
-                "network.protocol": ["http"],
                 "network.static.domain": ["example.com"],
                 "network.static.uri": ["http://example.com/"],
             },
@@ -48,7 +45,6 @@ import html_.html_
         (
             ["   https://example.com   "],
             {
-                "network.protocol": ["https"],
                 "network.static.domain": ["example.com"],
                 "network.static.uri": ["https://example.com/"],
             },
@@ -57,9 +53,60 @@ import html_.html_
         (
             ["https://exa\n\tmple.com"],
             {
-                "network.protocol": ["https"],
                 "network.static.domain": ["example.com"],
                 "network.static.uri": ["https://example.com/"],
+            },
+        ),
+        (
+            ["mailto:  username@example.com"],
+            {
+                "network.static.domain": ["example.com"],
+                "network.email.address": ["username@example.com"],
+            },
+        ),
+        (
+            ["mailto:%20%20username@example.com"],
+            {
+                "network.static.domain": ["example.com"],
+                "network.email.address": ["username@example.com"],
+            },
+        ),
+        (
+            ["whatsapp://send?text=test"],
+            {
+                "file.string.extracted": ["send", "whatsapp://send?text=test"],
+            },
+        ),
+        (
+            ["mailto:webmaster"],
+            {
+                "file.string.extracted": ["webmaster"],
+            },
+        ),
+        (["mailto:"], {}),
+        (
+            ["chrome://resources/css/text_defaults_md.css"],
+            {
+                "file.string.extracted": ["chrome://resources/css/text_defaults_md.css", "resources"],
+                "network.static.uri_path": ["/css/text_defaults_md.css"],
+            },
+        ),
+        (
+            ["http://weebly-link/"],
+            {
+                "file.string.extracted": ["http://weebly-link/", "weebly-link"],
+            },
+        ),
+        (
+            ["https://example.comIF"],
+            {
+                "file.string.extracted": ["example.comif", "https://example.comif/"],
+            },
+        ),
+        (
+            ["https://example-.com"],
+            {
+                "file.string.extracted": ["example-.com", "https://example-.com/"],
             },
         ),
     ],

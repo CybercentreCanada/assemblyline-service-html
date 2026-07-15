@@ -6,15 +6,26 @@ import ipaddress
 import os
 import re
 from collections import defaultdict
+from enum import Enum
 
 import bs4
 import pywhatwgurl
+from assemblyline.common.net import find_top_level_domains
 from assemblyline_v4_service.common.base import ServiceBase
 from assemblyline_v4_service.common.request import ServiceRequest
 from assemblyline_v4_service.common.result import ResultTextSection, ResultSection
-from urllib.parse import unquote_to_bytes
+from urllib.parse import unquote_to_bytes, unquote
 
 MIMETYPE_TO_EXT = {"image/png": ".png"}
+
+TOP_LEVEL_DOMAINS = find_top_level_domains()
+
+
+class HostType(Enum):
+    OTHER = 0
+    IPV4 = 1
+    DOMAIN = 2
+    IPV6 = 3
 
 
 def tag_urls(urls: list[str], logger=None) -> dict[str, list[str]]:
@@ -26,18 +37,43 @@ def tag_urls(urls: list[str], logger=None) -> dict[str, list[str]]:
             if logger and not url.strip().startswith("#"):
                 logger.warning(e)
             continue
+        hostname = url.hostname
         if url.protocol == "mailto:":
-            email = url.pathname
-            tags["network.email.address"].add(email)
-            tags["network.static.domain"].add(email.rsplit("@", 1)[-1])
-        elif url.hostname:
-            tags["network.static.uri"].add(str(url))
-            tags["network.protocol"].add(url.protocol.strip(":"))
-            try:
-                ip_address = ipaddress.ip_address(url.hostname)
-                tags["network.static.ip"].add(ip_address.compressed)
-            except ValueError:
-                tags["network.static.domain"].add(url.hostname)
+            # This can produce unicode placeholder characters, but so does outlook with invalid utf-8
+            email = unquote(url.pathname).strip()
+            if not email:
+                continue
+            if "@" in email:
+                tags["network.email.address"].add(email)
+                tags["network.static.domain"].add(email.rsplit("@", 1)[-1])
+            else:
+                tags["file.string.extracted"].add(email)
+
+        elif hostname:
+            if hostname.startswith("["):
+                try:
+                    ip_address = ipaddress.IPv6Address(hostname[1:-1])
+                    tags["network.static.ip"].add(ip_address.compressed)
+                    host_type = HostType.IPV6
+                except ValueError as e:
+                    if logger:
+                        logger.warning(e)
+                    host_type = HostType.OTHER
+            else:
+                try:
+                    ip_address = ipaddress.IPv4Address(hostname)
+                    tags["network.static.ip"].add(ip_address.compressed)
+                    host_type = HostType.IPV4
+                except ValueError:
+                    if _is_valid_domain(hostname):
+                        # Make sure there's a TLD
+                        tags["network.static.domain"].add(hostname)
+                        host_type = HostType.DOMAIN
+                    else:
+                        host_type = HostType.OTHER
+                        # Not a domain, but probably an interesting keyword
+                        tags["file.string.extracted"].add(hostname)
+            tags["network.static.uri" if host_type != HostType.OTHER else "file.string.extracted"].add(str(url))
             if url.port:
                 tags["network.port"].add(url.port)
             if url.pathname and url.pathname != "/":
@@ -45,7 +81,7 @@ def tag_urls(urls: list[str], logger=None) -> dict[str, list[str]]:
     return {label: sorted(values) for label, values in tags.items()}
 
 
-def decode_data_url(url: pywhatwgurl.URL) -> (str, bytes):
+def decode_data_url(url: pywhatwgurl.URL) -> tuple[str, bytes]:
     if url.protocol != "data:":
         raise ValueError("URL is not a data url")
     if "," not in url.pathname:
@@ -63,7 +99,7 @@ def decode_data_url(url: pywhatwgurl.URL) -> (str, bytes):
 
 def check_html_entities(data: bytes) -> ResultSection | None:
     alphanumeric_html_entities = False
-    for hex, number in re.findall(b'(?i)&#(x)?([0-9a-f]{1,7});', data):
+    for hex, number in re.findall(b"(?i)&#(x)?([0-9a-f]{1,7});", data):
         try:
             number = int(number, 16 if hex else 10)
         except ValueError:
@@ -80,7 +116,7 @@ def check_html_entities(data: bytes) -> ResultSection | None:
 class HTML(ServiceBase):
     """Assemblyline service for static HTML analysis."""
 
-    def extract_data_urls(self, urls: list[str], request: ServiceRequest):
+    def extract_data_urls(self, urls: list[str], request: ServiceRequest) -> None:
         for url in urls:
             try:
                 url = pywhatwgurl.URL(url)
@@ -101,7 +137,7 @@ class HTML(ServiceBase):
                 f.write(data)
             request.add_extracted(file_path, file_name, f"{media_type} data url")
 
-    def execute(self, request: ServiceRequest):
+    def execute(self, request: ServiceRequest) -> None:
         """Run the service."""
         file_contents = request.file_contents
 
@@ -133,7 +169,10 @@ class HTML(ServiceBase):
         css_urls = []
         styles = soup.find_all("style")
         for style in styles:
-            urls = re.findall(r'url\("([^"]*)"\)', style.string)
+            string = style.string
+            if not string:
+                continue
+            urls = re.findall(r'url\("([^"]*)"\)', string)
             for url in urls:
                 css_urls.append(url)
         if css_urls:
@@ -146,3 +185,12 @@ class HTML(ServiceBase):
             )
 
         self.extract_data_urls(srcs + css_urls + hrefs, request)
+
+
+def _is_valid_domain(domain: str) -> bool:
+    segments = domain.split(".")
+    return (
+        len(segments) >= 2
+        and segments[-1].upper() in TOP_LEVEL_DOMAINS
+        and not any(segment.startswith("-") or segment.endswith("-") for segment in segments)
+    )
