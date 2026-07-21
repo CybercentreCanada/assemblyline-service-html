@@ -6,6 +6,7 @@ import ipaddress
 import os
 import re
 from collections import defaultdict
+from collections.abc import Iterable
 from enum import Enum
 
 import bs4
@@ -28,7 +29,7 @@ class HostType(Enum):
     IPV6 = 3
 
 
-def tag_urls(urls: list[str], logger=None) -> dict[str, list[str]]:
+def tag_urls(urls: Iterable[str], logger=None) -> dict[str, list[str]]:
     tags = defaultdict(set)
     for url in urls:
         try:
@@ -156,7 +157,7 @@ class HTML(ServiceBase):
                     tags=tag_urls(form_actions, self.log),
                 )
             )
-        hrefs = [tag.get("href", "") for tag in soup.find_all(href=True)]
+        hrefs = sorted({tag.get("href", "") for tag in soup.find_all(href=True)}.difference({"", "#", "/"}))
         if hrefs:
             request.result.add_section(
                 ResultTextSection("href attributes", body="\n".join(hrefs), tags=tag_urls(hrefs, self.log))
