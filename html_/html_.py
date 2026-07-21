@@ -165,12 +165,20 @@ class HTML(ServiceBase):
         hrefs = sorted({tag.get("href", "") for tag in soup.find_all(href=True)}.difference({"", "#", "/"}))
         if hrefs:
             request.result.add_section(
-                ResultTextSection("href attributes", body="\n".join(hrefs), tags=tag_urls(hrefs, self.log))
+                ResultTextSection(
+                    "href attributes",
+                    body="\n".join(href for href in hrefs if not href.strip().lower().startswith("data:")),
+                    tags=tag_urls(hrefs, self.log),
+                )
             )
         srcs = [tag.get("src", "") for tag in soup.find_all(src=True)]
         if srcs:
             request.result.add_section(
-                ResultTextSection("src attributes", body="\n".join(srcs), tags=tag_urls(srcs, self.log))
+                ResultTextSection(
+                    "src attributes",
+                    body="\n".join(src for src in srcs if not src.strip().lower().startswith("data:")),
+                    tags=tag_urls(srcs, self.log),
+                )
             )
         css_urls = []
         styles = soup.find_all("style")
@@ -185,7 +193,7 @@ class HTML(ServiceBase):
             request.result.add_section(
                 ResultTextSection(
                     "URLs in CSS",
-                    body="\n".join(css_urls),
+                    body="\n".join(css_url for css_url in css_urls if not css_url.strip().lower().startswith("data:")),
                     tags=tag_urls(css_urls, self.log),
                 )
             )
