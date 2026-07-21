@@ -19,7 +19,7 @@ from urllib.parse import unquote_to_bytes, unquote
 
 
 DEFAULT_SCHEME = "https:"
-MIMETYPE_TO_EXT = {"image/png": ".png"}
+MIMETYPE_TO_EXT = {"image/png": ".png", "image/gif": ".gif"}
 
 TOP_LEVEL_DOMAINS = find_top_level_domains()
 
