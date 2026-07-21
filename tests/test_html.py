@@ -109,6 +109,14 @@ import html_.html_
                 "file.string.extracted": ["example-.com", "https://example-.com/"],
             },
         ),
+        (
+            ["//example.com/path/to/resource"],
+            {
+                "network.static.domain": ["example.com"],
+                "network.static.uri": ["https://example.com/path/to/resource"],
+                "network.static.uri_path": ["/path/to/resource"],
+            },
+        )
     ],
 )
 def test_tag_uris(uris: list[str], tags: dict[str, list[str]]) -> None:

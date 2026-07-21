@@ -17,6 +17,8 @@ from assemblyline_v4_service.common.request import ServiceRequest
 from assemblyline_v4_service.common.result import ResultTextSection, ResultSection
 from urllib.parse import unquote_to_bytes, unquote
 
+
+DEFAULT_SCHEME = "https:"
 MIMETYPE_TO_EXT = {"image/png": ".png"}
 
 TOP_LEVEL_DOMAINS = find_top_level_domains()
@@ -32,6 +34,9 @@ class HostType(Enum):
 def tag_urls(urls: Iterable[str], logger=None) -> dict[str, list[str]]:
     tags = defaultdict(set)
     for url in urls:
+        if url.startswith("//"):
+            # Assume a default scheme for relative urls with authority
+            url = DEFAULT_SCHEME + url
         try:
             url = pywhatwgurl.URL(url)
         except ValueError as e:
