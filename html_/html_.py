@@ -6,6 +6,7 @@ import ipaddress
 import os
 import re
 from collections import defaultdict
+from collections.abc import Iterable
 from enum import Enum
 
 import bs4
@@ -16,7 +17,9 @@ from assemblyline_v4_service.common.request import ServiceRequest
 from assemblyline_v4_service.common.result import ResultTextSection, ResultSection
 from urllib.parse import unquote_to_bytes, unquote
 
-MIMETYPE_TO_EXT = {"image/png": ".png"}
+
+DEFAULT_SCHEME = "https:"
+MIMETYPE_TO_EXT = {"image/png": ".png", "image/gif": ".gif", "image/svg+xml": ".svg"}
 
 TOP_LEVEL_DOMAINS = find_top_level_domains()
 
@@ -28,9 +31,12 @@ class HostType(Enum):
     IPV6 = 3
 
 
-def tag_urls(urls: list[str], logger=None) -> dict[str, list[str]]:
+def tag_urls(urls: Iterable[str], logger=None) -> dict[str, list[str]]:
     tags = defaultdict(set)
     for url in urls:
+        if url.startswith("//"):
+            # Assume a default scheme for relative urls with authority
+            url = DEFAULT_SCHEME + url
         try:
             url = pywhatwgurl.URL(url)
         except ValueError as e:
@@ -156,17 +162,25 @@ class HTML(ServiceBase):
                     tags=tag_urls(form_actions, self.log),
                 )
             )
-        hrefs = [tag.get("href", "") for tag in soup.find_all(href=True)]
+        hrefs = sorted({tag.get("href", "").strip() for tag in soup.find_all(href=True)}.difference({"", "#", "/"}))
         if hrefs:
             request.result.add_section(
-                ResultTextSection("href attributes", body="\n".join(hrefs), tags=tag_urls(hrefs, self.log))
+                ResultTextSection(
+                    "href attributes",
+                    body="\n".join(href for href in hrefs if not href[:5].lower() == "data:"),
+                    tags=tag_urls(hrefs, self.log),
+                )
             )
-        srcs = [tag.get("src", "") for tag in soup.find_all(src=True)]
+        srcs = sorted({tag.get("src", "").strip() for tag in soup.find_all(src=True)})
         if srcs:
             request.result.add_section(
-                ResultTextSection("src attributes", body="\n".join(srcs), tags=tag_urls(srcs, self.log))
+                ResultTextSection(
+                    "src attributes",
+                    body="\n".join(src for src in srcs if not src[:5].lower() == "data:"),
+                    tags=tag_urls(srcs, self.log),
+                )
             )
-        css_urls = []
+        css_url_set = set()
         styles = soup.find_all("style")
         for style in styles:
             string = style.string
@@ -174,12 +188,13 @@ class HTML(ServiceBase):
                 continue
             urls = re.findall(r'url\("([^"]*)"\)', string)
             for url in urls:
-                css_urls.append(url)
+                css_url_set.add(url.strip())
+        css_urls = sorted(css_url_set)
         if css_urls:
             request.result.add_section(
                 ResultTextSection(
                     "URLs in CSS",
-                    body="\n".join(css_urls),
+                    body="\n".join(css_url for css_url in css_urls if not css_url[:5].lower() == "data:"),
                     tags=tag_urls(css_urls, self.log),
                 )
             )
