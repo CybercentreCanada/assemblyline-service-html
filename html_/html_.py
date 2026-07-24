@@ -12,6 +12,7 @@ from enum import Enum
 import bs4
 import pywhatwgurl
 from assemblyline.common.net import find_top_level_domains
+from assemblyline.odm.base import EMAIL_REGEX
 from assemblyline_v4_service.common.base import ServiceBase
 from assemblyline_v4_service.common.request import ServiceRequest
 from assemblyline_v4_service.common.result import ResultTextSection, ResultSection
@@ -49,7 +50,7 @@ def tag_urls(urls: Iterable[str], logger=None) -> dict[str, list[str]]:
             email = unquote(url.pathname).strip()
             if not email:
                 continue
-            if "@" in email:
+            if re.fullmatch(EMAIL_REGEX, email):
                 tags["network.email.address"].add(email)
                 tags["network.static.domain"].add(email.rsplit("@", 1)[-1])
             else:

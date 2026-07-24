@@ -116,7 +116,13 @@ import html_.html_
                 "network.static.uri": ["https://example.com/path/to/resource"],
                 "network.static.uri_path": ["/path/to/resource"],
             },
-        )
+        ),
+        (
+            ["mailto:user.name@example..ca"], 
+            {
+                "file.string.extracted": ["user.name@example..ca"],
+            },
+        ),
     ],
 )
 def test_tag_uris(uris: list[str], tags: dict[str, list[str]]) -> None:
