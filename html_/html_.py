@@ -208,5 +208,5 @@ def _is_valid_domain(domain: str) -> bool:
     return (
         len(segments) >= 2
         and segments[-1].upper() in TOP_LEVEL_DOMAINS
-        and not any(segment.startswith("-") or segment.endswith("-") for segment in segments)
+        and not any(segment == "" or segment.startswith("-") or segment.endswith("-") for segment in segments)
     )
