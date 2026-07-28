@@ -50,9 +50,10 @@ def tag_urls(urls: Iterable[str], logger=None) -> dict[str, list[str]]:
             email = unquote(url.pathname).strip()
             if not email:
                 continue
-            if re.fullmatch(EMAIL_REGEX, email):
+            domain = email.rsplit("@", 1)[-1]
+            if re.fullmatch(EMAIL_REGEX, email) and _is_valid_domain(domain):
                 tags["network.email.address"].add(email)
-                tags["network.static.domain"].add(email.rsplit("@", 1)[-1])
+                tags["network.static.domain"].add(domain)
             else:
                 tags["file.string.extracted"].add(email)
 
