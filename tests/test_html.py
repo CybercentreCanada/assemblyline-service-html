@@ -135,6 +135,13 @@ import html_.html_
                 "file.string.extracted": ["user.name@example.gc"],
             },
         ),
+        (
+            ["mailto:1234@192.0.2.1"],
+            {
+                "file.string.extracted": ["1234@192.0.2.1"],
+                "network.static.ip": ["192.0.2.1"],
+            },
+        ),
     ],
 )
 def test_tag_uris(uris: list[str], tags: dict[str, list[str]]) -> None:

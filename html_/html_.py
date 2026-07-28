@@ -55,6 +55,12 @@ def tag_urls(urls: Iterable[str], logger=None) -> dict[str, list[str]]:
                 tags["network.email.address"].add(email)
                 tags["network.static.domain"].add(domain)
             else:
+                try:
+                    # Handle IP address email addresses
+                    ip = ipaddress.ip_address(domain).compressed
+                    tags["network.static.ip"].add(ip)
+                except ValueError:
+                    pass
                 tags["file.string.extracted"].add(email)
 
         elif hostname:
