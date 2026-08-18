@@ -15,7 +15,7 @@ from assemblyline.common.net import find_top_level_domains
 from assemblyline.odm.base import EMAIL_REGEX
 from assemblyline_v4_service.common.base import ServiceBase
 from assemblyline_v4_service.common.request import ServiceRequest
-from assemblyline_v4_service.common.result import ResultTextSection, ResultSection
+from assemblyline_v4_service.common.result import ResultTextSection, ResultSection, TableSectionBody
 from urllib.parse import unquote_to_bytes, unquote
 
 
@@ -170,7 +170,45 @@ class HTML(ServiceBase):
                     tags=tag_urls(form_actions, self.log),
                 )
             )
-        hrefs = sorted({tag.get("href", "").strip() for tag in soup.find_all(href=True)}.difference({"", "#", "/"}))
+        href_tags = soup.find_all(href=True)
+        hrefs = []
+        deceptive_links = []
+        deceptive_link_table = TableSectionBody()
+        for tag in href_tags:
+            href = tag["href"].strip()
+            if href in ("", "#", "/"):
+                continue
+            hrefs.append(href)
+            if href.startswith("//"):
+                # Assume a default scheme for relative urls with authority
+                href = DEFAULT_SCHEME + href
+            try:
+                href_url = pywhatwgurl.URL(href)
+            except ValueError as e:
+                self.log.warning(e)
+                continue
+            tag_text = tag.text.strip()
+            if tag_text:
+                try:
+                    text_url = pywhatwgurl.URL(tag_text)
+                    text_host = text_url.hostname
+                except ValueError:
+                    if _is_valid_domain(tag_text):
+                        text_host = tag_text
+                    else:
+                        text_host = None
+                href_host = href_url.hostname
+                if text_host and href_host != text_host:
+                    deceptive_links.append(href)
+                    deceptive_link_table.add_row({"href": href, "link text": tag_text})
+        if deceptive_links:
+            request.result.add_section(
+                ResultSection(
+                    "Deceptive Links",
+                    deceptive_link_table,
+                    tags=tag_urls(deceptive_links)
+                )
+            )
         if hrefs:
             request.result.add_section(
                 ResultTextSection(
@@ -216,4 +254,5 @@ def _is_valid_domain(domain: str) -> bool:
         len(segments) >= 2
         and segments[-1].upper() in TOP_LEVEL_DOMAINS
         and not any(segment == "" or segment.startswith("-") or segment.endswith("-") for segment in segments)
+        and not re.search(r"[\x00-\x1F \"#%&'()*/:<>?@\[\\\]^|\x7F]", domain)
     )
